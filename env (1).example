@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────
+# Job Search Automation — Environment Variables
+# Copy this file to .env and fill in your values
+# NEVER commit .env to GitHub
+# ─────────────────────────────────────────────
+
+# ── Adzuna API ─────────────────────────────────
+# Get free keys at: https://developer.adzuna.com
+ADZUNA_APP_ID=your_adzuna_app_id_here
+ADZUNA_APP_KEY=your_adzuna_app_key_here
+
+# ── Google Sheets ──────────────────────────────
+# The spreadsheet ID from your Google Sheet URL:
+# https://docs.google.com/spreadsheets/d/SHEET_ID/edit
+GOOGLE_SHEET_ID=your_google_sheet_id_here
+
+# ── Gmail Notifications ────────────────────────
+# The email address to receive job alerts
+NOTIFY_EMAIL=your@email.com
+
+# ── Telegram Bot ───────────────────────────────
+# Create a bot via @BotFather on Telegram
+# Get your chat ID via @userinfobot
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+TELEGRAM_CHAT_ID=your_telegram_chat_id_here
+
+# ── n8n (if self-hosting) ──────────────────────
+N8N_BASIC_AUTH_USER=admin
+N8N_BASIC_AUTH_PASSWORD=changeme
+N8N_HOST=localhost
+N8N_PORT=5678
+N8N_PROTOCOL=http

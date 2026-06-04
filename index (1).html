@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Search Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141416;
+    --card: #1a1a1d;
+    --border: #2a2a2e;
+    --border-accent: #3a3a40;
+    --text: #e8e8ec;
+    --muted: #7a7a85;
+    --accent: #4ade80;
+    --accent-dim: rgba(74,222,128,0.12);
+    --hot: #f87171;
+    --hot-dim: rgba(248,113,113,0.12);
+    --good: #4ade80;
+    --good-dim: rgba(74,222,128,0.12);
+    --ok: #94a3b8;
+    --ok-dim: rgba(148,163,184,0.1);
+    --montreal: #a78bfa;
+    --ottawa: #60a5fa;
+    --remote: #34d399;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 0;
+    line-height: 1.5;
+  }
+
+  /* Header */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .header-meta { color: var(--muted); font-size: 12px; }
+
+  /* Stats bar */
+  .stats {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-value { font-size: 22px; font-weight: 500; font-family: var(--font-head); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat-hot .stat-value { color: var(--hot); }
+  .stat-good .stat-value { color: var(--good); }
+  .stat-total .stat-value { color: var(--text); }
+  .stat-divider { width: 1px; height: 32px; background: var(--border); }
+
+  /* Filters */
+  .controls {
+    padding: 16px 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  input[type="text"] {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    width: 240px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]::placeholder { color: var(--muted); }
+  input[type="text"]:focus { border-color: var(--accent); }
+
+  .pill-group { display: flex; gap: 4px; }
+  .pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .pill:hover { border-color: var(--border-accent); color: var(--text); }
+  .pill.active-all { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .pill.active-hot { background: var(--hot-dim); border-color: var(--hot); color: var(--hot); }
+  .pill.active-good { background: var(--good-dim); border-color: var(--good); color: var(--good); }
+  .pill.active-ok { background: var(--ok-dim); border-color: var(--ok); color: var(--ok); }
+  .pill.active-mtl { background: rgba(167,139,250,0.12); border-color: var(--montreal); color: var(--montreal); }
+  .pill.active-ott { background: rgba(96,165,250,0.12); border-color: var(--ottawa); color: var(--ottawa); }
+
+  select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* Table */
+  .table-wrap {
+    padding: 0 32px 32px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+  }
+  thead th:hover { color: var(--text); }
+  thead th.sorted { color: var(--accent); }
+  thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+  thead th.sorted .sort-arrow { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  tbody tr:hover { background: var(--card); }
+  td { padding: 10px 12px; vertical-align: middle; }
+
+  /* Job title cell */
+  .job-title { font-weight: 500; color: var(--text); font-size: 13px; }
+  .job-title a { color: inherit; text-decoration: none; }
+  .job-title a:hover { color: var(--accent); }
+  .job-company { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* Location badge */
+  .loc-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .loc-montreal { background: rgba(167,139,250,0.15); color: var(--montreal); border: 1px solid rgba(167,139,250,0.3); }
+  .loc-ottawa { background: rgba(96,165,250,0.15); color: var(--ottawa); border: 1px solid rgba(96,165,250,0.3); }
+  .loc-remote { background: rgba(52,211,153,0.12); color: var(--remote); border: 1px solid rgba(52,211,153,0.25); }
+  .loc-other { background: var(--ok-dim); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Score cell */
+  .score-cell { display: flex; align-items: center; gap: 8px; }
+  .score-num { font-size: 14px; font-weight: 500; min-width: 20px; }
+  .score-bar { height: 3px; border-radius: 2px; background: var(--border); flex: 1; min-width: 40px; }
+  .score-fill { height: 100%; border-radius: 2px; }
+
+  /* Label badge */
+  .label {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .label-hot { background: var(--hot-dim); color: var(--hot); border: 1px solid rgba(248,113,113,0.3); }
+  .label-good { background: var(--good-dim); color: var(--good); border: 1px solid rgba(74,222,128,0.3); }
+  .label-ok { background: var(--ok-dim); color: var(--ok); border: 1px solid var(--border); }
+
+  /* Salary */
+  .salary { font-size: 12px; white-space: nowrap; }
+  .salary-listed { color: var(--text); }
+  .salary-unknown { color: var(--muted); }
+
+  /* Applied badge */
+  .applied-yes { color: var(--accent); }
+  .applied-no { color: var(--muted); }
+  .applied-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .applied-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .applied-toggle.done { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* Source */
+  .source { font-size: 10px; color: var(--muted); }
+
+  /* Date */
+  .date-cell { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 64px 32px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* Count */
+  .result-count { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  /* Apply link */
+  .apply-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 11px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .apply-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">job<span>.</span>tracker</div>
+  <div class="header-meta" id="last-updated">Load your data below ↓</div>
+</header>
+
+<div class="stats">
+  <div class="stat stat-total">
+    <div class="stat-value" id="stat-total">0</div>
+    <div class="stat-label">Total Jobs</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat stat-hot">
+    <div class="stat-value" id="stat-hot">0</div>
+    <div class="stat-label">🔥 Hot</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat stat-good">
+    <div class="stat-value" id="stat-good">0</div>
+    <div class="stat-label">👍 Good</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat">
+    <div class="stat-value" id="stat-applied" style="color: var(--accent)">0</div>
+    <div class="stat-label">Applied</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat">
+    <div class="stat-value" id="stat-mtl" style="color: var(--montreal)">0</div>
+    <div class="stat-label">Montréal</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat">
+    <div class="stat-value" id="stat-ott" style="color: var(--ottawa)">0</div>
+    <div class="stat-label">Ottawa</div>
+  </div>
+
+  <div style="margin-left: auto;">
+    <label for="csv-upload" style="cursor:pointer; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent); padding: 7px 14px; border-radius: 6px; font-size: 12px; font-family: var(--font-mono);">
+      ↑ Load CSV from Sheets
+    </label>
+    <input type="file" id="csv-upload" accept=".csv" style="display:none">
+  </div>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search title, company, location…">
+
+  <div class="pill-group" id="label-filter">
+    <button class="pill active-all" data-val="all">All</button>
+    <button class="pill" data-val="Hot">🔥 Hot</button>
+    <button class="pill" data-val="Good">👍 Good</button>
+    <button class="pill" data-val="Ok">✅ Ok</button>
+  </div>
+
+  <div class="pill-group" id="city-filter">
+    <button class="pill" data-city="all">All cities</button>
+    <button class="pill" data-city="montreal">Montréal</button>
+    <button class="pill" data-city="ottawa">Ottawa</button>
+    <button class="pill" data-city="remote">Remote</button>
+  </div>
+
+  <select id="sort-select">
+    <option value="score-desc">Score ↓</option>
+    <option value="score-asc">Score ↑</option>
+    <option value="date-desc">Date ↓</option>
+    <option value="salary-desc">Salary ↓</option>
+  </select>
+
+  <div class="result-count" id="result-count"></div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Job</th>
+        <th>Location</th>
+        <th>Salary</th>
+        <th data-sort="score">Score <span class="sort-arrow">↕</span></th>
+        <th>Label</th>
+        <th>Source</th>
+        <th>Applied</th>
+        <th>Link</th>
+      </tr>
+    </thead>
+    <tbody id="job-tbody">
+      <tr>
+        <td colspan="9">
+          <div class="empty">
+            <div class="empty-icon">📄</div>
+            <div>Export your Google Sheet as CSV and load it above to view your jobs here.</div>
+            <div style="margin-top: 8px; font-size: 11px; color: var(--muted)">File → Download → CSV</div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allJobs = [];
+let appliedSet = new Set(JSON.parse(localStorage.getItem('applied') || '[]'));
+let activeLabel = 'all';
+let activeCity = 'all';
+let sortKey = 'score-desc';
+let searchQ = '';
+
+function getLocClass(loc) {
+  const l = (loc || '').toLowerCase();
+  if (l.includes('montreal') || l.includes('montréal') || l.includes('laval') || l.includes('longueuil')) return 'loc-montreal';
+  if (l.includes('ottawa') || l.includes('gatineau') || l.includes('nepean') || l.includes('bells corners') || l.includes('hunt club') || l.includes('parliament hill')) return 'loc-ottawa';
+  if (l.includes('remote') || l.includes('canada') || l.includes('worldwide')) return 'loc-remote';
+  return 'loc-other';
+}
+
+function getLocLabel(loc) {
+  const c = getLocClass(loc);
+  if (c === 'loc-montreal') return 'Montréal';
+  if (c === 'loc-ottawa') return 'Ottawa';
+  if (c === 'loc-remote') return 'Remote';
+  return loc || '—';
+}
+
+function scoreColor(s) {
+  if (s >= 7) return 'var(--hot)';
+  if (s >= 5) return 'var(--good)';
+  return 'var(--ok)';
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let inQ = false, cur = '';
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  }).filter(j => j['Title'] || j['title']);
+}
+
+function normalizeJob(raw) {
+  return {
+    date: raw['Date Found'] || raw['date_found'] || '',
+    title: raw['Title'] || raw['title'] || '',
+    company: raw['Company'] || raw['company'] || '',
+    location: raw['Location'] || raw['location'] || '',
+    salary: raw['Salary'] || raw['salary_display'] || 'Not listed',
+    score: parseInt(raw['Score'] || raw['score'] || '0'),
+    label: raw['Label'] || raw['label'] || 'Ok',
+    source: raw['Source'] || raw['source'] || '',
+    url: raw['URL'] || raw['url'] || '',
+    applied: raw['Applied'] || 'No',
+    notes: raw['Notes'] || '',
+  };
+}
+
+function updateStats(jobs) {
+  document.getElementById('stat-total').textContent = jobs.length;
+  document.getElementById('stat-hot').textContent = jobs.filter(j => j.score >= 7).length;
+  document.getElementById('stat-good').textContent = jobs.filter(j => j.score >= 5 && j.score < 7).length;
+  document.getElementById('stat-applied').textContent = appliedSet.size;
+  document.getElementById('stat-mtl').textContent = jobs.filter(j => getLocClass(j.location) === 'loc-montreal').length;
+  document.getElementById('stat-ott').textContent = jobs.filter(j => getLocClass(j.location) === 'loc-ottawa').length;
+}
+
+function filterAndSort() {
+  let jobs = [...allJobs];
+
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    jobs = jobs.filter(j =>
+      j.title.toLowerCase().includes(q) ||
+      j.company.toLowerCase().includes(q) ||
+      j.location.toLowerCase().includes(q)
+    );
+  }
+
+  if (activeLabel !== 'all') {
+    jobs = jobs.filter(j => j.label === activeLabel);
+  }
+
+  if (activeCity !== 'all') {
+    jobs = jobs.filter(j => {
+      const cl = getLocClass(j.location);
+      if (activeCity === 'montreal') return cl === 'loc-montreal';
+      if (activeCity === 'ottawa') return cl === 'loc-ottawa';
+      if (activeCity === 'remote') return cl === 'loc-remote';
+      return true;
+    });
+  }
+
+  jobs.sort((a, b) => {
+    if (sortKey === 'score-desc') return b.score - a.score;
+    if (sortKey === 'score-asc') return a.score - b.score;
+    if (sortKey === 'date-desc') return b.date.localeCompare(a.date);
+    if (sortKey === 'salary-desc') {
+      const sa = parseInt((a.salary.match(/\$?([\d,]+)/) || ['0','0'])[1].replace(/,/g,'')) || 0;
+      const sb = parseInt((b.salary.match(/\$?([\d,]+)/) || ['0','0'])[1].replace(/,/g,'')) || 0;
+      return sb - sa;
+    }
+    return 0;
+  });
+
+  return jobs;
+}
+
+function render() {
+  const jobs = filterAndSort();
+  document.getElementById('result-count').textContent = `${jobs.length} result${jobs.length !== 1 ? 's' : ''}`;
+  const tbody = document.getElementById('job-tbody');
+
+  if (!jobs.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="empty-icon">🔍</div><div>No jobs match your filters.</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = jobs.map((j, idx) => {
+    const locClass = getLocClass(j.location);
+    const locLabel = getLocLabel(j.location);
+    const sc = j.score;
+    const applied = appliedSet.has(j.url || j.title);
+    const salaryClass = j.salary && j.salary !== 'Not listed' ? 'salary-listed' : 'salary-unknown';
+    const labelClass = j.label === 'Hot' ? 'label-hot' : j.label === 'Good' ? 'label-good' : 'label-ok';
+
+    return `<tr>
+      <td class="date-cell">${j.date.slice(0,10) || '—'}</td>
+      <td>
+        <div class="job-title">${j.url ? `<a href="${j.url}" target="_blank">${j.title}</a>` : j.title}</div>
+        <div class="job-company">${j.company}</div>
+      </td>
+      <td><span class="loc-badge ${locClass}">${locLabel}</span></td>
+      <td><span class="salary ${salaryClass}">${j.salary || '—'}</span></td>
+      <td>
+        <div class="score-cell">
+          <span class="score-num" style="color:${scoreColor(sc)}">${sc}</span>
+          <div class="score-bar"><div class="score-fill" style="width:${sc*10}%; background:${scoreColor(sc)}"></div></div>
+        </div>
+      </td>
+      <td><span class="label ${labelClass}">${j.label}</span></td>
+      <td><span class="source">${j.source}</span></td>
+      <td>
+        <button class="applied-toggle ${applied ? 'done' : ''}" data-key="${j.url || j.title}" onclick="toggleApplied(this, '${(j.url || j.title).replace(/'/g,"\\'")}')">
+          ${applied ? '✓ Applied' : 'Mark'}
+        </button>
+      </td>
+      <td>
+        ${j.url ? `<a class="apply-link" href="${j.url}" target="_blank">Apply →</a>` : '—'}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleApplied(btn, key) {
+  if (appliedSet.has(key)) {
+    appliedSet.delete(key);
+    btn.classList.remove('done');
+    btn.textContent = 'Mark';
+  } else {
+    appliedSet.add(key);
+    btn.classList.add('done');
+    btn.textContent = '✓ Applied';
+    showToast('Marked as applied!');
+  }
+  localStorage.setItem('applied', JSON.stringify([...appliedSet]));
+  document.getElementById('stat-applied').textContent = appliedSet.size;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// CSV upload
+document.getElementById('csv-upload').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const raw = parseCSV(ev.target.result);
+    allJobs = raw.map(normalizeJob);
+    updateStats(allJobs);
+    document.getElementById('last-updated').textContent = `Loaded ${allJobs.length} jobs from ${file.name}`;
+    render();
+  };
+  reader.readAsText(file);
+});
+
+// Search
+document.getElementById('search').addEventListener('input', e => {
+  searchQ = e.target.value;
+  render();
+});
+
+// Label filter
+document.getElementById('label-filter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-val]');
+  if (!btn) return;
+  activeLabel = btn.dataset.val;
+  document.querySelectorAll('#label-filter .pill').forEach(p => {
+    p.className = 'pill';
+    if (p.dataset.val === activeLabel) {
+      if (activeLabel === 'all') p.classList.add('active-all');
+      else if (activeLabel === 'Hot') p.classList.add('active-hot');
+      else if (activeLabel === 'Good') p.classList.add('active-good');
+      else p.classList.add('active-ok');
+    }
+  });
+  render();
+});
+
+// City filter
+document.getElementById('city-filter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-city]');
+  if (!btn) return;
+  activeCity = btn.dataset.city;
+  document.querySelectorAll('#city-filter .pill').forEach(p => {
+    p.className = 'pill';
+    if (p.dataset.city === activeCity) {
+      if (activeCity === 'montreal') p.classList.add('active-mtl');
+      else if (activeCity === 'ottawa') p.classList.add('active-ott');
+      else p.classList.add('active-all');
+    }
+  });
+  render();
+});
+
+// Sort
+document.getElementById('sort-select').addEventListener('change', e => {
+  sortKey = e.target.value;
+  render();
+});
+</script>
+</body>
+</html>
