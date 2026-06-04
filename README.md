@@ -1,3 +1,6 @@
+<img width="1558" height="665" alt="Capture d’écran 2026-06-04 160106" src="https://github.com/user-attachments/assets/0ba40cce-a6c7-4bac-b0fe-df2d64dda3da" />
+<img width="1918" height="1016" alt="Capture d’écran 2026-06-03 160918" src="https://github.com/user-attachments/assets/f5b3216e-c599-4e31-9fd4-f526a95b6310" />
+<img width="1918" height="1016" alt="Capture d’écran 2026-06-03 160918" src="https://github.com/user-attachments/assets/da731dfa-de76-4d3f-8680-48cf898e1303" />
 
 # 🔍 Job Search Automation
 
@@ -191,12 +194,16 @@ MIT — do whatever you want with it.
 
 ### Workflow
 ![n8n Workflow](screenshots/workflow.png)
+<img width="1918" height="1016" alt="Capture d’écran 2026-06-03 160918" src="https://github.com/user-attachments/assets/42645e32-fc06-4968-8d74-0e809188a408" />
+
 
 ### Google Sheet
 ![Job Tracker](screenshots/sheet.png)
+<img width="1558" height="665" alt="Capture d’écran 2026-06-04 160106" src="https://github.com/user-attachments/assets/3fb0d4de-d3fe-4476-9b1d-bcf5c020d99a" />
 
 ### Telegram Alert
 ![Telegram Bot](screenshots/telegram.png)
+<img width="883" height="571" alt="Capture d’écran 2026-06-04 160043" src="https://github.com/user-attachments/assets/b00abc3f-0d88-4e86-9236-ca24823153b2" />
 
 ---
 
