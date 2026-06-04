@@ -187,6 +187,17 @@ PRs welcome! Ideas for improvement:
 
 MIT — do whatever you want with it.
 
+## Screenshots
+
+### Workflow
+![n8n Workflow](screenshots/workflow.png)
+
+### Google Sheet
+![Job Tracker](screenshots/sheet.png)
+
+### Telegram Alert
+![Telegram Bot](screenshots/telegram.png)
+
 ---
 
 *Built with n8n • Adzuna API • Google Sheets • Telegram*
