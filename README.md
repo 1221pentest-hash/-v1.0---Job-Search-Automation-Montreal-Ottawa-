@@ -1,6 +1,5 @@
-<img width="1558" height="665" alt="Capture d’écran 2026-06-04 160106" src="https://github.com/user-attachments/assets/0ba40cce-a6c7-4bac-b0fe-df2d64dda3da" />
-<img width="1918" height="1016" alt="Capture d’écran 2026-06-03 160918" src="https://github.com/user-attachments/assets/f5b3216e-c599-4e31-9fd4-f526a95b6310" />
-<img width="1918" height="1016" alt="Capture d’écran 2026-06-03 160918" src="https://github.com/user-attachments/assets/da731dfa-de76-4d3f-8680-48cf898e1303" />
+<img width="1852" height="565" alt="Capture d’écran 2026-06-04 155928" src="https://github.com/user-attachments/assets/0faa81c2-4fea-423f-98ad-7d3bbdacddb1" />
+
 
 # 🔍 Job Search Automation
 
